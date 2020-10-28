@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">barCheckout</string>
+    <string name="add">hinzufügen</string>
+    <string name="imageDrink">Getränke Bild</string>
+    <string name="drink1">Cola</string>
+    <string name="drink2">Fanta</string>
+    <string name="drink3">Sprite</string>
+    <string name="drink4">Spezi</string>
+</resources>
