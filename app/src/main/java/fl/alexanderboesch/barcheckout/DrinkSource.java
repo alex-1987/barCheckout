@@ -28,9 +28,9 @@ public class DrinkSource {
     }
 
     public void open(){
-        Log.i(LOG_TAG, "Eine Referenz auf die Datenbank wird jetzt angefragt");
+        //Log.i(LOG_TAG, "Eine Referenz auf die Datenbank wird jetzt angefragt");
         database = dbHelper.getWritableDatabase();
-        Log.i(LOG_TAG, "Anfrage an: " + database.getPath());
+        //Log.i(LOG_TAG, "Anfrage an: " + database.getPath());
     }
 
     public void close(){

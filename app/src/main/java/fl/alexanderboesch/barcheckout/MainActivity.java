@@ -17,13 +17,12 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -36,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     private DrinkSource dataSource;
     private GridView grid;
-    private ListView listview;
 
     private static final int PICK_IMAGE = 100;
     public Uri imageUri;
@@ -52,22 +51,64 @@ public class MainActivity extends AppCompatActivity {
 
     private HashMap<Long,Integer> hashMap;
 
+    public void onSaveInstanceState(Bundle savedState) {
 
+    super.onSaveInstanceState(savedState);
+    // Die Konsumierten Getränke In ein ArrayList seichern und in der OnCreate Methode wieder auslesen
+        Log.i(LOG_TAG, "CAll onSaveInstanceState");
+        ArrayList<Integer> hashValue = new ArrayList<>();
+        long[] hashKeyArray = new long[hashMap.size()];
+
+        if (hashMap != null){
+            int k = 0;
+            for (long l : hashMap.keySet()){
+                Log.i(LOG_TAG, "Einlesen der Hashmap");
+                Log.i(LOG_TAG, "KEY: " + l + " = " + hashMap.get(l) );
+                hashKeyArray[k] = l;
+                hashValue.add(hashMap.get(l));
+                Log.i(LOG_TAG, l + " = " + hashMap.get(l));
+                k++;
+            }
+        }
+        Log.i(LOG_TAG, "Alle key von der Hashmap im Array");
+        Log.i(LOG_TAG, "Size von Array: " + hashValue.size());
+        for (int i : hashValue){
+            Log.i(LOG_TAG, "Key: " + i);
+        }
+        for (int i = 0; i < hashValue.size(); i++){
+            Log.i(LOG_TAG, " for Key: " + hashValue.get(i));
+        }
+
+
+
+        savedState.putLongArray("HashKey", hashKeyArray);
+        savedState.putIntegerArrayList("HashValue", hashValue);
+
+    }
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(LOG_TAG, "--Starten der onCreate Methode");
-
-        Log.i(LOG_TAG, "Set Contet View");
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        setSupportActionBar(myToolbar);
 
-        Log.i(LOG_TAG, "Erstellen der dataSource");
         dataSource = new DrinkSource(this);
+        if (hashMap == null){
+            hashMap = new HashMap<>();
+            }
+
+        // Die Konsumierten Getränke Auslesen und wieder in die Hashmap eintragen
+        if (savedInstanceState != null){
+            ArrayList<Integer> hashValue = savedInstanceState.getIntegerArrayList("HashValue");
+            long[] hashKey = savedInstanceState.getLongArray("HashKey");
+
+            for (int i = 0; i < hashValue.size(); i++){
+                hashMap.put(hashKey[i], hashValue.get(i));
+            }
+        }
 
         activateFAB();
-        hashMap = new HashMap<>();
-
-
     }
 
     @Override
@@ -86,16 +127,47 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
         showAllDrinkEntries();
+        showAllUsedDrinks();
         activeShortClick();
         activateLongClick();
+        calculateAllUsedDrinks();
 
     }
 
     private void showAllUsedDrinks(){
         ListView listview = (ListView) findViewById(R.id.list_view);
         Log.i(LOG_TAG, "showAllUsedDrinks");
+        Log.i(LOG_TAG, "Es sind " + hashMap.size() + " auf der Liste");
+
         DrinkHashAdapter hashAdapter = new DrinkHashAdapter(getApplicationContext(),hashMap);
         listview.setAdapter(hashAdapter);
+    }
+
+    private void calculateAllUsedDrinks(){
+        TextView textViewCount = (TextView) findViewById(R.id.textView);
+        ArrayList<Double> pricePerDrink = new ArrayList<>();
+
+        Log.i(LOG_TAG, "Es sind " + hashMap.size() + " Getränke auf der Liste");
+        int total = 0;
+        double summeryUsedDrinks = 0;
+        for (long l : hashMap.keySet()){
+            total += hashMap.get(l);
+        }
+        Log.i(LOG_TAG, "Es sind " + total + " gekauft worden");
+
+        for (long l : hashMap.keySet()){
+            Drink drink = dataSource.getDrink(l);
+            double drinkPrice = drink.getPriceNormal(); // Price from a Drink
+            Log.i(LOG_TAG,"Preis eines drinks ist: " + drinkPrice);
+            int count = hashMap.get(l); // How much Drinks on the List
+            pricePerDrink.add(drinkPrice * count);
+            Log.i(LOG_TAG, "Das " + drink.getName() + " ist " + count + " in der Liste::: Dies macht: " + drinkPrice * count);
+        }
+        for (double d : pricePerDrink){
+            summeryUsedDrinks += d;
+        }
+        textViewCount.setText(String.valueOf(summeryUsedDrinks));
+        //textViewCount.setText("TEST");
     }
 
     private void showAllDrinkEntries(){
@@ -129,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "position:" + position + " id:" + id,Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "position:" + position + " id:" + id,Toast.LENGTH_LONG).show();
                 //Put one Drink in the HashMap
                 putDrinkOnList(id, 1, "yes");
                 showAllUsedDrinks();
@@ -198,6 +270,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void putDrinkOnList(long id, int count, String addition){
+        if (hashMap == null) {
+            hashMap = new HashMap<>();
+        }
+
         Drink drink = dataSource.getDrink(id);        // get the Drink
         Log.i(LOG_TAG, "putDrinkOnList:" + drink.getName());
         switch (addition){
@@ -214,13 +290,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         for (long l : hashMap.keySet()){
-            Log.i(LOG_TAG, "HashmapItems:" +  "Id:" + l + " Name:" + dataSource.getDrink(l).getName() + " Anzahl: " + hashMap.get(l));
+           // Log.i(LOG_TAG, "HashmapItems:" +  "Id:" + l + " Name:" + dataSource.getDrink(l).getName() + " Anzahl: " + hashMap.get(l));
         }
         Log.i(LOG_TAG,"--------------------");
+        calculateAllUsedDrinks();
     }
 
     private int getDrinkOnList(long id){
-
         try {
             return hashMap.get(id);
         } catch (NullPointerException ex){

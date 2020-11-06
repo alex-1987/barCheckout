@@ -46,6 +46,7 @@
         <condition column="_id" operator="=" value="" active="true" />
       </filter>
     </filter-actions>
+    <filter-actions connection-id="365ec9c8-b8c2-4850-94f3-184cee273000" dataset="main.android_metadata" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
