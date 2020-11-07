@@ -9,6 +9,8 @@ import android.os.Bundle;
 
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -19,6 +21,7 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -51,8 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private HashMap<Long,Integer> hashMap;
 
-    public void onSaveInstanceState(Bundle savedState) {
-
+    public void onSaveInstanceState(@NonNull Bundle savedState) {
     super.onSaveInstanceState(savedState);
     // Die Konsumierten Getränke In ein ArrayList seichern und in der OnCreate Methode wieder auslesen
         Log.i(LOG_TAG, "CAll onSaveInstanceState");
@@ -90,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.i(LOG_TAG, "--Starten der onCreate Methode");
         setContentView(R.layout.activity_main);
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
-        setSupportActionBar(myToolbar);
 
         dataSource = new DrinkSource(this);
         if (hashMap == null){
@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         activateFAB();
+        initAppBar();
     }
 
     @Override
@@ -118,6 +119,18 @@ public class MainActivity extends AppCompatActivity {
         dataSource.close();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected void onResume() {
@@ -134,6 +147,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void initAppBar(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
     private void showAllUsedDrinks(){
         ListView listview = (ListView) findViewById(R.id.list_view);
         Log.i(LOG_TAG, "showAllUsedDrinks");
@@ -288,10 +305,6 @@ public class MainActivity extends AppCompatActivity {
                 hashMap.put(id, count);
                 break;
         }
-
-        for (long l : hashMap.keySet()){
-           // Log.i(LOG_TAG, "HashmapItems:" +  "Id:" + l + " Name:" + dataSource.getDrink(l).getName() + " Anzahl: " + hashMap.get(l));
-        }
         Log.i(LOG_TAG,"--------------------");
         calculateAllUsedDrinks();
     }
@@ -386,6 +399,8 @@ public class MainActivity extends AppCompatActivity {
             Log.i(LOG_TAG, "URI:" + imageUri);
            imageView.setImageURI(imageUri);
     }
+
+
 
 }
 

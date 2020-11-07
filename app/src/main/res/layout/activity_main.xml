@@ -5,66 +5,79 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingTop="?android:attr/actionBarSize"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    android:orientation="vertical">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme"
+            android:layout_alignParentStart="true"/>
+
+
+        <GridView
+            android:id="@+id/grid_view"
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_below="@id/toolbar"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentEnd="true"
+            android:clickable="true"
+            android:columnWidth="100dp"
+            android:focusable="true"
+            android:gravity="top"
+            android:horizontalSpacing="5dp"
+            android:minHeight="100dp"
+            android:numColumns="auto_fit"
+            android:stretchMode="spacingWidthUniform"
+            android:verticalSpacing="10dp"
+            android:layout_marginTop="20dp">
+
+        </GridView>
+
+        <ListView
+            android:id="@+id/list_view"
+            android:foregroundGravity="bottom"
+            android:layout_below="@id/grid_view"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/textView"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="30dp">
+
+        </ListView>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_below="@id/grid_view"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_above="@id/floatingActionButton"
+            android:tag="@string/quantitiy"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
-            android:layout_margin="16dp"
-            android:layout_marginStart="144dp"
-            android:clickable="true"
-            android:contentDescription="TODO"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:focusable="true"
-
-            />
-
-        <GridView
-            android:id="@+id/grid_view"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
-            android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:minHeight="100dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:clickable="true"
-            android:columnWidth="100dp"
-            android:focusable="true"
-            android:gravity="top"
-            android:horizontalSpacing="5dp"
-            android:numColumns="auto_fit"
-            android:stretchMode="spacingWidthUniform"
-            android:verticalSpacing="10dp">
-
-        </GridView>
-
-        <ListView
-            android:id="@+id/list_view"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/textView"
-            android:layout_centerInParent="true"
-            android:layout_marginBottom="16dp">
-
-        </ListView>
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="250dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_above="@id/floatingActionButton"
-            android:tag="@string/quantitiy"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+            android:contentDescription="@string/save_data"
+            android:focusable="true" />
 
 
 </RelativeLayout>

@@ -12,7 +12,8 @@
         android:layout_marginTop="56dp"
         app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/pic_fanta_orange_canada" />
+        app:srcCompat="@drawable/pic_fanta_orange_canada"
+        android:contentDescription="@string/Drink_Picture" />
 
     <EditText
         android:id="@+id/NewDrinkeditTextDrinkName"
@@ -25,7 +26,8 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NewDrinkimageView" />
+        app:layout_constraintTop_toBottomOf="@+id/NewDrinkimageView"
+        android:autofillHints="@string/drink_name" />
 
     <EditText
         android:id="@+id/NewDrinkpriceNormalEditText"
@@ -38,7 +40,8 @@
         android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NewDrinkeditTextDrinkName" />
+        app:layout_constraintTop_toBottomOf="@+id/NewDrinkeditTextDrinkName"
+        android:autofillHints="@string/price_drink_normal" />
 
     <EditText
         android:id="@+id/NewDrinkPriceEmployeeEditText"
@@ -51,7 +54,8 @@
         android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NewDrinkpriceNormalEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/NewDrinkpriceNormalEditText"
+        android:autofillHints="@string/drink_price_employee" />
 
     <EditText
         android:id="@+id/NewDrinkQuantityEditText"
@@ -64,7 +68,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NewDrinkPriceEmployeeEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/NewDrinkPriceEmployeeEditText"
+        android:autofillHints="@string/Quantity_stock" />
 
     <Button
         android:id="@+id/buttonCancel"
@@ -72,7 +77,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginTop="64dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/cancel"
+        app:layout_constraintEnd_toStartOf="@+id/buttonAddNew"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/NewDrinkQuantityEditText" />
 

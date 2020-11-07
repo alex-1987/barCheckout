@@ -2,12 +2,14 @@
     <string name="app_name">barCheckout</string>
     <string name="add">hinzufügen</string>
     <string name="imageDrink">Getränke Bild</string>
-    <string name="nameDrink">Getränke Name</string>
+    <string name="nameDrink" >Getränke Name</string>
     <string name="cancel">Abbrechen</string>
     <string name="priceNormal">Preis Normal</string>
     <string name="priceEmployee">Preis Mitarbeiter</string>
     <string name="quantitiy">Anzahl im Lager</string>
     <string name="count">Anzahl</string>
+    <string name="newDrink">Neuer Drink</string>
+    <string name="loadSampels">Beispiel laden</string>
 
 
     <!--BeispielDaten-->
@@ -26,5 +28,11 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="save_data">Speichere Daten</string>
+    <string name="Drink_Picture">Bild für das Angelegte Bild</string>
+    <string name="drink_name">Name des Drinks</string>
+    <string name="price_drink_normal">Drink Preis Normal</string>
+    <string name="drink_price_employee">Drink Preis Mitarbeiter</string>
+    <string name="Quantity_stock">Lager Menge</string>
 
 </resources>
