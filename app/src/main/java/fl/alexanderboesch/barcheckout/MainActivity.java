@@ -1,12 +1,17 @@
 package fl.alexanderboesch.barcheckout;
 
+import android.annotation.SuppressLint;
 import android.content.ContextWrapper;
 import android.content.Intent;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import android.os.Bundle;
 
+import android.os.Looper;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -20,12 +25,15 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,6 +46,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
 
     private DrinkSource dataSource;
     private GridView grid;
+    private RecyclerView recyclerView;
+    private DrinkAdapterRecyclerView adapter;
+
 
     private static final int PICK_IMAGE = 100;
     public Uri imageUri;
@@ -80,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < hashValue.size(); i++){
             Log.i(LOG_TAG, " for Key: " + hashValue.get(i));
         }
-
-
 
         savedState.putLongArray("HashKey", hashKeyArray);
         savedState.putIntegerArrayList("HashValue", hashValue);
@@ -125,9 +137,17 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
+        switch (item.getItemId()){
+            case R.id.newDrinkMenu:
+                newDrinkPopUp();
+                return true;
+            case R.id.loadSamplesMenu:
+                loadSamples();
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -139,10 +159,11 @@ public class MainActivity extends AppCompatActivity {
         dataSource.open();
 
         Log.i(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
-        showAllDrinkEntries();
+        //showAllDrinkEntries();
         showAllUsedDrinks();
-        activeShortClick();
-        activateLongClick();
+        showAllDrinksRecyclerView();
+        // activeShortClick();
+        // activateLongClick();
         calculateAllUsedDrinks();
 
     }
@@ -159,6 +180,38 @@ public class MainActivity extends AppCompatActivity {
         DrinkHashAdapter hashAdapter = new DrinkHashAdapter(getApplicationContext(),hashMap);
         listview.setAdapter(hashAdapter);
     }
+
+    private  void showAllDrinksRecyclerView(){
+
+        int numberOfColumns = 3;
+        final List<Drink> dbDrinks = dataSource.getAllDrinks();
+
+        adapter = new DrinkAdapterRecyclerView(this, dbDrinks);
+        recyclerView = (RecyclerView) findViewById(R.id.grid_view_recycle);
+        RecyclerView.LayoutManager manager = new GridLayoutManager(this, numberOfColumns);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
+
+        View.OnClickListener onItemClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
+                Log.i(LOG_TAG, "Tag= " + v.getTag() + viewHolder.getAdapterPosition());
+                Log.i(LOG_TAG, "position= " + viewHolder.getAdapterPosition());
+                Log.i(LOG_TAG, "id= " + viewHolder.getItemViewType());
+
+                int position = viewHolder.getAdapterPosition();
+
+                //Toast.makeText(MainActivity.this, "You Clicked: " + dataSource.getDrink(id).getName(), Toast.LENGTH_SHORT).show();
+            }
+        };
+        adapter.setItemClickListener(onItemClickListener);
+
+
+        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
+    }
+
 
     private void calculateAllUsedDrinks(){
         TextView textViewCount = (TextView) findViewById(R.id.textView);
@@ -187,19 +240,19 @@ public class MainActivity extends AppCompatActivity {
         //textViewCount.setText("TEST");
     }
 
-    private void showAllDrinkEntries(){
-        Log.i(LOG_TAG, "set GridView");
-        grid = (GridView) findViewById(R.id.grid_view);
-
-        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
-        List<Drink> dbDrinks = dataSource.getAllDrinks();
-
-        Log.i(LOG_TAG, "Adapter erstellen");
-        DrinkAdapter drinkAdapter = new DrinkAdapter(getApplicationContext(), dbDrinks);
-
-        Log.i(LOG_TAG, "Adapter setzen");
-        grid.setAdapter(drinkAdapter);
-    }
+//    private void showAllDrinkEntries(){
+//        Log.i(LOG_TAG, "set GridView");
+//        grid = (GridView) findViewById(R.id.grid_view);
+//
+//        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
+//        List<Drink> dbDrinks = dataSource.getAllDrinks();
+//
+//        Log.i(LOG_TAG, "Adapter erstellen");
+//        DrinkAdapter drinkAdapter = new DrinkAdapter(getApplicationContext(), dbDrinks);
+//
+//        Log.i(LOG_TAG, "Adapter setzen");
+//        grid.setAdapter(drinkAdapter);
+//    }
 
 
 
@@ -354,14 +407,16 @@ public class MainActivity extends AppCompatActivity {
                 file = new File(file, name + ".jpg");
                 try {
                     InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+                    //Reszie Picture
+                    Bitmap rezBitmap = resziePicture(bitmap);
                     OutputStream outputStream = new FileOutputStream(file);
-                    byte[] buf = new byte[1024];
-                    int len;
-                    while ((len=inputStream.read(buf))>0){
-                        outputStream.write(buf,0,len);
-                    }
-                    inputStream.close();
+                    rezBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+                    outputStream.flush();
                     outputStream.close();
+                    inputStream.close();
+
                     Log.i(LOG_TAG, "Speichern des Bildes erfolgreich:" + file);
                 } catch (IOException o) {
                     o.printStackTrace();
@@ -369,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 dataSource.createDrink(name,priceNormal,priceEmployee,quantity,file.toString());
                 dialog.dismiss();
-                showAllDrinkEntries();
+                showAllDrinksRecyclerView();
             }
         });
 
@@ -400,7 +455,86 @@ public class MainActivity extends AppCompatActivity {
            imageView.setImageURI(imageUri);
     }
 
+    private String downloadSamplePictures(URL imageURL, String name) {
+        //Bitmap bitmap = null;
+        InputStream inputStream;
+        ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
+        File file = wrapper.getDir("SampleImages", MODE_PRIVATE);
+
+        try {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+            Log.i(LOG_TAG, "Starten Try: Input Stream");
+            HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            inputStream = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+            //Resize Picture Res=Reszied
+
+            Bitmap rezBitmap = resziePicture(bitmap);
+
+            file = new File(file, name + ".jpg");
+            OutputStream outputStream = new FileOutputStream(file);
+
+            rezBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(LOG_TAG, "FEHLER:  File Path = " + file.getAbsolutePath());
+        }
+
+        return file.getPath();
+    }
+
+    private Bitmap resziePicture(Bitmap orgBitmap) {
+        Bitmap rezBitmap = null;
+        int orgHight = orgBitmap.getHeight();
+        int orgWidth = orgBitmap.getWidth();
+        int rezWidth = 200;
+        if (orgWidth > rezWidth) {
+            int rezHight = orgHight / (orgWidth / rezWidth);
+            rezBitmap = Bitmap.createScaledBitmap(orgBitmap, rezWidth, rezHight, false);
+            return rezBitmap;
+        } else {
+            return orgBitmap;
+        }
+    }
+
+
+    private void loadSamples() {
+        HashMap<URL,String> samples = new HashMap<>();
+        try {
+            samples.put(new URL("https://files.billa.at/files/artikel/00-74150_01__1200x1200.jpg"), "Cola");
+            samples.put(new URL("https://germanfoods.eu/media/image/product/2027/lg/fanta-orange-can-034.jpg"), "Fanta");
+            samples.put(new URL("https://www.worldofsweets.de/out/pictures/master/product/1/sprite-330ml(1).jpg"), "Sprite");
+            samples.put(new URL("https://www.casapoli.ch/.imaging/productListImage/dms/produktbilder/alpagold-lager.jpg"), "Alpagold");
+            samples.put(new URL("https://www.bier-universum.de/fileadmin/BierDaten/BierBilder/tiger.jpg"), "Tiger");
+            samples.put(new URL("https://www.biertempel.at/wp-content/uploads/2015/08/SINGHA.jpg"), "Singha");
+            samples.put(new URL("https://www.getraenkeoase.li/image/large/6991-arlberg-cola-mix-spezi.jpg"), "Spezi");
+            samples.put(new URL("https://www.weinkauff-getraenke.de/file/8ae8be8b7226649d0172940592b95e83.de.0/naturtrueber-apfelsaft-kumpf.jpg?"),"Apfelsaft");
+            samples.put(new URL("https://www.green-in-berlin.de/wordpress/wp-content/uploads/2011/12/Kaffee.jpg"), "Kaffee");
+            samples.put(new URL("https://i.pinimg.com/originals/2e/54/1f/2e541ffd5edb81d733d5a5c4bb88257e.jpg"), "Sweps");
+            samples.put(new URL("https://thumbs.dreamstime.com/z/tomatensaft-einem-glas-tomaten-mit-basilikum-auf-wei%C3%9Fen-backgrou-124800209.jpg"), "Tomatensaft");
+            samples.put(new URL("https://as2.ftcdn.net/jpg/02/21/59/15/500_F_221591550_HiCASlHSSPpsdWMN3I54gp9BYyzXIqZP.jpg"),"Orangensaft");
+            samples.put(new URL("https://www.getraenkeland.ch/img_artikel/detail/3536-michel-bodyguard-multivitamin-1.jpg"), "Multivitamin");
+
+
+
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        for (URL k : samples.keySet()){
+            dataSource.createDrink(samples.get(k),30,40,50,downloadSamplePictures(k,samples.get(k)));
+        }
+        showAllDrinksRecyclerView();
+    }
 
 
 }
-

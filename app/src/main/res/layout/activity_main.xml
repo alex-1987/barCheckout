@@ -16,7 +16,17 @@
             android:theme="?attr/actionBarTheme"
             android:layout_alignParentStart="true"/>
 
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/grid_view_recycle"
+            android:layout_width = "match_parent"
+            android:layout_height = "400dp"
+            android:scrollbars = "vertical"
+            android:layout_marginTop="20dp"
+            android:layout_below="@id/toolbar"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"/>
+<!--
         <GridView
             android:id="@+id/grid_view"
             android:layout_width="match_parent"
@@ -36,11 +46,12 @@
             android:layout_marginTop="20dp">
 
         </GridView>
+        -->
 
         <ListView
             android:id="@+id/list_view"
             android:foregroundGravity="bottom"
-            android:layout_below="@id/grid_view"
+            android:layout_below="@id/grid_view_recycle"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
             android:layout_width="wrap_content"
@@ -54,7 +65,7 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_below="@id/grid_view"
+            android:layout_below="@id/grid_view_recycle"
             android:layout_width="150dp"
             android:layout_height="50dp"
             android:layout_alignParentEnd="true"

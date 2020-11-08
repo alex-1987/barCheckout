@@ -3,6 +3,8 @@ package fl.alexanderboesch.barcheckout;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import fl.alexanderboesch.barcheckout.R;
@@ -52,8 +56,8 @@ public class DrinkAdapter extends BaseAdapter{
 
        // pic.setImageResource(drinks.get(position).getImageResource());
         Bitmap bm = BitmapFactory.decodeFile(drinks.get(position).getImagePath());
-        pic.setImageBitmap(bm);
         text.setText(drinks.get(position).getName());
+        pic.setImageURI(Uri.parse(drinks.get(position).getImagePath()));
         return view;
     }
 }
