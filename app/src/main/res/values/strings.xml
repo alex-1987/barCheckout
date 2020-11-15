@@ -34,5 +34,18 @@
     <string name="clickPicAbove">Für Bildauswahl das obere Bild anklicken</string>
     <string name="navigation_drawer_open">open Drawer</string>
     <string name="navigation_drawer_close">close Drawer</string>
+    <string name="title_activity_basic">BasicActivity</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="title_activity_nav">NavActivity</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
 
 </resources>

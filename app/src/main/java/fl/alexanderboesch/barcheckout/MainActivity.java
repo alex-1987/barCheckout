@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends NavActivity {
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int PICK_IMAGE = 100;
 
@@ -72,10 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
     private HashMap<Long,Integer> drinkOnListHashMap;
 
-    private ActionBarDrawerToggle drawerToggle;
-    private DrawerLayout mDrawer;
-
-
+    //private ActionBarDrawerToggle drawerToggle;
+    //private DrawerLayout mDrawer;
 
 
     public void onSaveInstanceState(@NonNull Bundle savedState) {
@@ -134,12 +132,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Find our drawer view
-       NavigationView nvDrawer = (NavigationView) findViewById(R.id.nvView);
+      // NavigationView nvDrawer = (NavigationView) findViewById(R.id.nvView);
         // Setup drawer view
-        setupDrawerContent(nvDrawer);
+      //  setupDrawerContent(nvDrawer);
 
         activateFAB();
-        initAppBar();
+       // initAppBar();
         invoiceDatabase = InvoiceDbRoom.getInstance(this);
     }
 
@@ -164,10 +162,10 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass = null;
         switch(menuItem.getItemId()) {
             case R.id.nav_first_fragment:
-                //fragmentClass = FirstFragment.class;
+                fragmentClass = MainActivity.class;
                 break;
             case R.id.nav_second_fragment:
-                //fragmentClass = SecondFragment.class;
+                //fragmentClass = ActivityInvoice.class;
                 break;
             case R.id.nav_third_fragment:
                 //fragmentClass = ThirdFragment.class;
@@ -190,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
         // Set action bar title
         setTitle(menuItem.getTitle());
         // Close the navigation drawer
-        mDrawer.closeDrawers();
+        //mDrawer.closeDrawers();
     }
 
     @Override
@@ -209,9 +207,9 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (drawerToggle.onOptionsItemSelected(item)){
-        return true;
-        }
+//        if (drawerToggle.onOptionsItemSelected(item)){
+//        return true;
+//        }
         switch (item.getItemId()){
             //option Menu
             case R.id.newDrinkMenu:
@@ -222,9 +220,9 @@ public class MainActivity extends AppCompatActivity {
                 loadSamples();
                 return true;
             //App Drawer
-            case android.R.id.home:
-                mDrawer.openDrawer(GravityCompat.START);
-                return true;
+//            case android.R.id.home:
+//                mDrawer.openDrawer(GravityCompat.START);
+//                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -242,27 +240,27 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggles
-        drawerToggle.onConfigurationChanged(newConfig);
-    }
+//    @Override
+//    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        // Pass any configuration change to the drawer toggles
+//        drawerToggle.onConfigurationChanged(newConfig);
+//    }
 
-    private void initAppBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-       setSupportActionBar(toolbar);
-        // Find our drawer view
-        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        // Setup toggle to display hamburger icon with nice animation
-        drawerToggle.setDrawerIndicatorEnabled(true);
-        drawerToggle.syncState();
-
-        // Tie DrawerLayout events to the ActionBarToggle
-        mDrawer.addDrawerListener(drawerToggle);
-    }
+//    private void initAppBar() {
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//       setSupportActionBar(toolbar);
+//        // Find our drawer view
+//        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        drawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+//
+//        // Setup toggle to display hamburger icon with nice animation
+//        drawerToggle.setDrawerIndicatorEnabled(true);
+//        drawerToggle.syncState();
+//
+//        // Tie DrawerLayout events to the ActionBarToggle
+//        mDrawer.addDrawerListener(drawerToggle);
+//    }
 
 
 
