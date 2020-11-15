@@ -1,37 +1,32 @@
 package fl.alexanderboesch.barcheckout;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.view.menu.MenuView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
-import java.util.Random;
 
 public class DrinkAdapterRecyclerView extends RecyclerView.Adapter<DrinkAdapterRecyclerView.ViewHolder> {
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private List<Drink> mData;
-    private LayoutInflater mInflater;
-    private View.OnClickListener onItemClickListener;
+    private final List<Drink> mData;
+    private final LayoutInflater mInflater;
+    private View.OnClickListener onShortClickListener;
+    private View.OnLongClickListener onLongClickListener;
 
 
     // data is passed into the constructor
     DrinkAdapterRecyclerView(Context context, List<Drink> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-
     }
 
     // inflates the cell layout from xml when needed
@@ -67,9 +62,8 @@ public class DrinkAdapterRecyclerView extends RecyclerView.Adapter<DrinkAdapterR
             myTextView = itemView.findViewById(R.id.drinkName);
             imageView = itemView.findViewById(R.id.imageDrink);
             itemView.setTag(this);
-            Log.i(LOG_TAG, "Item-View :");
-            itemView.setOnClickListener(onItemClickListener);
-            
+            itemView.setOnClickListener(onShortClickListener);
+            itemView.setOnLongClickListener(onLongClickListener);
         }
 
 
@@ -84,14 +78,14 @@ public class DrinkAdapterRecyclerView extends RecyclerView.Adapter<DrinkAdapterR
     public String getItem(int id) {
         return mData.get(id).getName();
     }
-    public long getItemIdR(int id) {
-        return mData.get(id).getId();
+
+    public void setOnShortClickListener(View.OnClickListener clickListener) {
+        onShortClickListener = clickListener;
     }
 
-    public void setItemClickListener(View.OnClickListener clickListener) {
-        onItemClickListener = clickListener;
+    public void setOnLongClickListener(View.OnLongClickListener clickListener){
+        onLongClickListener = clickListener;
     }
-
 
     public void onItemClick(View view, int position) {
         Log.i("TAG", "You clicked number " + getItem(position).toString() + ", which is at cell position " + position);

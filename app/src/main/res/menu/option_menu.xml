@@ -5,10 +5,11 @@
     <item android:title="@string/newDrink"
         android:id="@+id/newDrinkMenu"
         android:orderInCategory="1"
-        app:showAsAction="ifRoom"
+        app:showAsAction="collapseActionView"
+
         />
 
     <item android:title="@string/loadSampels"
         android:id="@+id/loadSamplesMenu"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="collapseActionView"/>
 </menu>

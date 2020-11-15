@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">"Kār brih̄ār bār̒ "</string>
+    <string name="add">เพิ่ม</string>
+    <string name="imageDrink">ภาพ</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="priceNormal">"ราคาปกติ "</string>
+    <string name="priceEmployee">"พนักงานตีราคา "</string>
+    <string name="quantitiy">"จำนวนในสต็อก "</string>
+    <string name="count">จำนวน</string>
+    <string name="newDrink">"เครื่องดื่มใหม่ "</string>
+    <string name="loadSampels">โหลดตัวอย่าง</string>
+    <string name="save_data">"บันทึกข้อมูล "</string>
+    <string name="Drink_Picture">"รูปภาพสำหรับรูปภาพที่สร้างขึ้น "</string>
+    <string name="next">"ต่อไป "</string>
+    <string name="previous">กลับ</string>
+    <string name="drink_name">"ชื่อเครื่องดื่ม  "</string>
+    <string name="price_drink_normal">ราคาปกติ</string>
+    <string name="drink_price_employee">พนักงานตีราคา</string>
+    <string name="Quantity_stock">"ปริมาณสต็อก "</string>
+    <string name="invoiceNr">"เลขที่ใบแจ้งหนี้ "</string>
+    <string name="bill">จำนวน</string>
+    <string name="moneyGiven">"ได้รับเงิน "</string>
+    <string name="moneychange">"เปลี่ยน "</string>
+    <string name="notEmpty">"ต้องกรอกข้อมูล "</string>
+    <string name="clickPicAbove">" คลิกที่รูปภาพด้านบนเพื่อเลือกรูปภาพ"</string>
+</resources>

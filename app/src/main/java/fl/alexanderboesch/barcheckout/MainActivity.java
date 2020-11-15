@@ -4,39 +4,44 @@ import android.annotation.SuppressLint;
 import android.content.ContextWrapper;
 import android.content.Intent;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import android.os.Bundle;
 
-import android.os.Looper;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;
 
@@ -49,40 +54,45 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
-
-    private DrinkSource dataSource;
-    private GridView grid;
-    private RecyclerView recyclerView;
-    private DrinkAdapterRecyclerView adapter;
-
-
     private static final int PICK_IMAGE = 100;
+
+    private DrinkSource drinkDatabase;
+    private InvoiceDbRoom invoiceDatabase;
+
     public Uri imageUri;
     public ImageView imageView;
 
-    private HashMap<Long,Integer> hashMap;
+    private HashMap<Long,Integer> drinkOnListHashMap;
+
+    private ActionBarDrawerToggle drawerToggle;
+    private DrawerLayout mDrawer;
+
+
+
 
     public void onSaveInstanceState(@NonNull Bundle savedState) {
     super.onSaveInstanceState(savedState);
-    // Die Konsumierten Getränke In ein ArrayList seichern und in der OnCreate Methode wieder auslesen
+    // Die Konsumierten Getränke In ein ArrayList speichern und in der OnCreate Methode wieder auslesen
         Log.i(LOG_TAG, "CAll onSaveInstanceState");
         ArrayList<Integer> hashValue = new ArrayList<>();
-        long[] hashKeyArray = new long[hashMap.size()];
+        long[] hashKeyArray = new long[drinkOnListHashMap.size()];
 
-        if (hashMap != null){
+        if (drinkOnListHashMap != null){
             int k = 0;
-            for (long l : hashMap.keySet()){
+            for (long l : drinkOnListHashMap.keySet()){
                 Log.i(LOG_TAG, "Einlesen der Hashmap");
-                Log.i(LOG_TAG, "KEY: " + l + " = " + hashMap.get(l) );
+                Log.i(LOG_TAG, "KEY: " + l + " = " + drinkOnListHashMap.get(l) );
                 hashKeyArray[k] = l;
-                hashValue.add(hashMap.get(l));
-                Log.i(LOG_TAG, l + " = " + hashMap.get(l));
+                hashValue.add(drinkOnListHashMap.get(l));
+                Log.i(LOG_TAG, l + " = " + drinkOnListHashMap.get(l));
                 k++;
             }
         }
@@ -97,17 +107,20 @@ public class MainActivity extends AppCompatActivity {
 
         savedState.putLongArray("HashKey", hashKeyArray);
         savedState.putIntegerArrayList("HashValue", hashValue);
+        //drawerToggle.syncState();
 
     }
+
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(LOG_TAG, "--Starten der onCreate Methode");
+
         setContentView(R.layout.activity_main);
 
-        dataSource = new DrinkSource(this);
-        if (hashMap == null){
-            hashMap = new HashMap<>();
+        drinkDatabase = new DrinkSource(this);
+        if (drinkOnListHashMap == null){
+            drinkOnListHashMap = new HashMap<>();
             }
 
         // Die Konsumierten Getränke Auslesen und wieder in die Hashmap eintragen
@@ -116,36 +129,101 @@ public class MainActivity extends AppCompatActivity {
             long[] hashKey = savedInstanceState.getLongArray("HashKey");
 
             for (int i = 0; i < hashValue.size(); i++){
-                hashMap.put(hashKey[i], hashValue.get(i));
+                drinkOnListHashMap.put(hashKey[i], hashValue.get(i));
             }
         }
 
+        // Find our drawer view
+       NavigationView nvDrawer = (NavigationView) findViewById(R.id.nvView);
+        // Setup drawer view
+        setupDrawerContent(nvDrawer);
+
         activateFAB();
         initAppBar();
+        invoiceDatabase = InvoiceDbRoom.getInstance(this);
+    }
+
+
+
+
+    private void setupDrawerContent(NavigationView navigationView) {
+            navigationView.setNavigationItemSelectedListener(
+                    new NavigationView.OnNavigationItemSelectedListener() {
+                        @Override
+                        public boolean onNavigationItemSelected(MenuItem menuItem) {
+                            selectDrawerItem(menuItem);
+                            return true;
+                        }
+                    });
+        }
+
+
+    private void selectDrawerItem(MenuItem menuItem) {
+        // Create a new fragment and specify the fragment to show based on nav item clicked
+        Fragment fragment = null;
+        Class fragmentClass = null;
+        switch(menuItem.getItemId()) {
+            case R.id.nav_first_fragment:
+                //fragmentClass = FirstFragment.class;
+                break;
+            case R.id.nav_second_fragment:
+                //fragmentClass = SecondFragment.class;
+                break;
+            case R.id.nav_third_fragment:
+                //fragmentClass = ThirdFragment.class;
+                break;
+            default:
+                //fragmentClass = FirstFragment.class;
+        }
+        try {
+            fragment = (Fragment) fragmentClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+
+        // Highlight the selected item has been done by NavigationView
+        menuItem.setChecked(true);
+        // Set action bar title
+        setTitle(menuItem.getTitle());
+        // Close the navigation drawer
+        mDrawer.closeDrawers();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.i(LOG_TAG, "Die Datenquelle wird geschlossen.");
-        dataSource.close();
+        drinkDatabase.close();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.option_menu, menu);
         return true;
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)){
+        return true;
+        }
         switch (item.getItemId()){
+            //option Menu
             case R.id.newDrinkMenu:
                 newDrinkPopUp();
                 return true;
+            //option Mentu
             case R.id.loadSamplesMenu:
                 loadSamples();
+                return true;
+            //App Drawer
+            case android.R.id.home:
+                mDrawer.openDrawer(GravityCompat.START);
                 return true;
         }
 
@@ -155,39 +233,55 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "Die Datenquelle wird geöffnet.");
-        dataSource.open();
+        Log.i(LOG_TAG, "Die Datenquelle wird geöffnet (On Resume)");
+        drinkDatabase.open();
 
-        Log.i(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
-        //showAllDrinkEntries();
         showAllUsedDrinks();
         showAllDrinksRecyclerView();
-        // activeShortClick();
-        // activateLongClick();
         calculateAllUsedDrinks();
 
     }
 
-    private void initAppBar(){
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        drawerToggle.onConfigurationChanged(newConfig);
     }
+
+    private void initAppBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+       setSupportActionBar(toolbar);
+        // Find our drawer view
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        // Setup toggle to display hamburger icon with nice animation
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerToggle.syncState();
+
+        // Tie DrawerLayout events to the ActionBarToggle
+        mDrawer.addDrawerListener(drawerToggle);
+    }
+
+
+
+
     private void showAllUsedDrinks(){
         ListView listview = (ListView) findViewById(R.id.list_view);
         Log.i(LOG_TAG, "showAllUsedDrinks");
-        Log.i(LOG_TAG, "Es sind " + hashMap.size() + " auf der Liste");
+        Log.i(LOG_TAG, "Es sind " + drinkOnListHashMap.size() + " auf der Liste");
 
-        DrinkHashAdapter hashAdapter = new DrinkHashAdapter(getApplicationContext(),hashMap);
+        DrinkHashAdapter hashAdapter = new DrinkHashAdapter(getApplicationContext(), drinkOnListHashMap);
         listview.setAdapter(hashAdapter);
     }
 
     private  void showAllDrinksRecyclerView(){
-
         int numberOfColumns = 3;
-        final List<Drink> dbDrinks = dataSource.getAllDrinks();
+        final List<Drink> dbDrinks = drinkDatabase.getAllDrinks();
 
-        adapter = new DrinkAdapterRecyclerView(this, dbDrinks);
-        recyclerView = (RecyclerView) findViewById(R.id.grid_view_recycle);
+        DrinkAdapterRecyclerView adapter = new DrinkAdapterRecyclerView(this, dbDrinks);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.grid_view_recycle);
         RecyclerView.LayoutManager manager = new GridLayoutManager(this, numberOfColumns);
         recyclerView.setLayoutManager(manager);
         recyclerView.setHasFixedSize(true);
@@ -197,95 +291,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
-                Log.i(LOG_TAG, "Tag= " + v.getTag() + viewHolder.getAdapterPosition());
-                Log.i(LOG_TAG, "position= " + viewHolder.getAdapterPosition());
-                Log.i(LOG_TAG, "id= " + viewHolder.getItemViewType());
+                long id = viewHolder.getAdapterPosition() + 1;
 
-                int position = viewHolder.getAdapterPosition();
+                putDrinkOnList(id,1,"yes");
 
-                //Toast.makeText(MainActivity.this, "You Clicked: " + dataSource.getDrink(id).getName(), Toast.LENGTH_SHORT).show();
-            }
-        };
-        adapter.setItemClickListener(onItemClickListener);
-
-
-        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
-    }
-
-
-    private void calculateAllUsedDrinks(){
-        TextView textViewCount = (TextView) findViewById(R.id.textView);
-        ArrayList<Double> pricePerDrink = new ArrayList<>();
-
-        Log.i(LOG_TAG, "Es sind " + hashMap.size() + " Getränke auf der Liste");
-        int total = 0;
-        double summeryUsedDrinks = 0;
-        for (long l : hashMap.keySet()){
-            total += hashMap.get(l);
-        }
-        Log.i(LOG_TAG, "Es sind " + total + " gekauft worden");
-
-        for (long l : hashMap.keySet()){
-            Drink drink = dataSource.getDrink(l);
-            double drinkPrice = drink.getPriceNormal(); // Price from a Drink
-            Log.i(LOG_TAG,"Preis eines drinks ist: " + drinkPrice);
-            int count = hashMap.get(l); // How much Drinks on the List
-            pricePerDrink.add(drinkPrice * count);
-            Log.i(LOG_TAG, "Das " + drink.getName() + " ist " + count + " in der Liste::: Dies macht: " + drinkPrice * count);
-        }
-        for (double d : pricePerDrink){
-            summeryUsedDrinks += d;
-        }
-        textViewCount.setText(String.valueOf(summeryUsedDrinks));
-        //textViewCount.setText("TEST");
-    }
-
-//    private void showAllDrinkEntries(){
-//        Log.i(LOG_TAG, "set GridView");
-//        grid = (GridView) findViewById(R.id.grid_view);
-//
-//        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
-//        List<Drink> dbDrinks = dataSource.getAllDrinks();
-//
-//        Log.i(LOG_TAG, "Adapter erstellen");
-//        DrinkAdapter drinkAdapter = new DrinkAdapter(getApplicationContext(), dbDrinks);
-//
-//        Log.i(LOG_TAG, "Adapter setzen");
-//        grid.setAdapter(drinkAdapter);
-//    }
-
-
-
-    private void activateFAB(){
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                newDrinkPopUp();
-                //showAllEntries();
-            }
-        });
-    }
-
-    private void activeShortClick(){
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(getApplicationContext(), "position:" + position + " id:" + id,Toast.LENGTH_LONG).show();
-                //Put one Drink in the HashMap
-                putDrinkOnList(id, 1, "yes");
                 showAllUsedDrinks();
             }
-        });
-    }
+        };
 
-    private void activateLongClick() {
-        grid.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        View.OnLongClickListener onLongClickListener = new View.OnLongClickListener(){
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                final long drinkId = id;
+            public boolean onLongClick(View v) {
+                RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) v.getTag();
+                final long drinkId = viewHolder.getAdapterPosition() + 1;
+
                 Log.i(LOG_TAG, "LONG-KLICK");
-                Drink drink = dataSource.getDrink(id);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 final View newItemCountView = getLayoutInflater().inflate(R.layout.item_count,null);
@@ -298,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setView(newItemCountView);
                 builder.create();
                 final AlertDialog dialog =  builder.show();
-                seekBar.setProgress(getDrinkOnList(id));
+                seekBar.setProgress(getDrinkOnList(drinkId));
                 count.setText(String.valueOf(seekBar.getProgress()));
 
                 seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -323,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
                         putDrinkOnList(drinkId, Integer.parseInt(count.getText().toString()),"no");
                         dialog.dismiss();
                         showAllUsedDrinks();
+                        calculateAllUsedDrinks();
                     }
                 });
 
@@ -335,27 +356,163 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
             }
-       });
+        };
+        adapter.setOnLongClickListener(onLongClickListener);
+        adapter.setOnShortClickListener(onItemClickListener);
+
+        Log.i(LOG_TAG, "alle Drinks von der Datenbank holen");
+    }
+
+
+    private void calculateAllUsedDrinks(){
+        TextView textViewCount = (TextView) findViewById(R.id.textView);
+        ArrayList<Double> pricePerDrink = new ArrayList<>();
+
+        Log.i(LOG_TAG, "Es sind " + drinkOnListHashMap.size() + " Getränke auf der Liste");
+        int total = 0;
+        double summeryUsedDrinks = 0;
+        for (long l : drinkOnListHashMap.keySet()){
+            total += drinkOnListHashMap.get(l);
+        }
+        Log.i(LOG_TAG, "Es sind " + total + " gekauft worden");
+
+        for (long l : drinkOnListHashMap.keySet()){
+            Drink drink = drinkDatabase.getDrink(l);
+            double drinkPrice = drink.getPriceNormal(); // Price from a Drink
+            Log.i(LOG_TAG,"Preis eines drinks ist: " + drinkPrice);
+            int count = drinkOnListHashMap.get(l); // How much Drinks on the List
+            pricePerDrink.add(drinkPrice * count);
+            Log.i(LOG_TAG, "Das " + drink.getName() + " ist " + count + " in der Liste::: Dies macht: " + drinkPrice * count);
+        }
+        for (double d : pricePerDrink){
+            summeryUsedDrinks += d;
+        }
+        textViewCount.setText(String.valueOf(summeryUsedDrinks));
+    }
+
+
+    private void activateFAB(){
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                final View billingView = getLayoutInflater().inflate(R.layout.billing,null);
+
+                final TextView invoiceNrText = (TextView) billingView.findViewById(R.id.invoiceNr);
+                final TextView billText = (TextView) billingView.findViewById(R.id.bill);
+                final EditText givenMoneyText = (EditText) billingView.findViewById(R.id.given);
+                final TextView moneyChangedText = (TextView) billingView.findViewById(R.id.moneyChange);
+                final Button saveButton = (Button) billingView.findViewById(R.id.buttonSaveBilling);
+                final  Button cancelButton = (Button) billingView.findViewById(R.id.buttonCancelBilling);
+
+                //Create the InvoiceNr with the Date abd Time
+                DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                LocalDateTime dateTime = LocalDateTime.now();
+                final String invoiceNr = dateTime.format(formatter);
+
+                invoiceNrText.setText(invoiceNr);
+
+                builder.setView(billingView);
+                builder.create();
+                final AlertDialog dialog =  builder.show();
+                givenMoneyText.requestFocus();
+
+                //Get Bill
+                double drinkBill = 0;
+                List<Drink> drinklist = drinkDatabase.getAllDrinks();
+                for (Long drinkid : drinkOnListHashMap.keySet()){
+                    int id = (int) (long) drinkid -1;
+                    Drink drink = drinklist.get(id);
+                    drinkBill += drink.getPriceNormal() * drinkOnListHashMap.get(drinkid);
+                }
+                billText.setText(String.valueOf(drinkBill));
+
+                givenMoneyText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        double zero = 0.00;
+                        if (start < 1){
+                            moneyChangedText.setText(String.valueOf(zero));
+                        }
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        Log.i(LOG_TAG, "AfterTextChanged");
+                        Log.i(LOG_TAG, "Char s: " + s);
+                        Log.i(LOG_TAG, "----------");
+                        if (s.length() > 0) {
+                            double givenMoney = Double.parseDouble(s.toString());
+                            double bill = Double.parseDouble(billText.getText().toString());
+                            double moneyChange = givenMoney - bill;
+                            moneyChangedText.setText(String.valueOf(moneyChange));
+                            if (moneyChange < 0) {
+                                moneyChangedText.setTextColor(getColor(R.color.design_default_color_error));
+                            } else {
+                                moneyChangedText.setTextColor(getColor(R.color.colorPrimary));
+                            }
+                        }
+                    }
+                });
+
+                saveButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        putDrinkInInvoiceDb(invoiceNr);
+                        dialog.dismiss();
+                        calculateAllUsedDrinks();
+                    }
+                });
+                cancelButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+            }
+        });
+    }
+
+    private void putDrinkInInvoiceDb(String invoiceNr) {
+        //Local Date for InvoiceNr
+        List<Drink> drinklist = drinkDatabase.getAllDrinks();
+        //Safe Drinks in the Databse Invoice
+        for (Long drinkid : drinkOnListHashMap.keySet()){
+            int id = (int) (long) drinkid -1;
+            Drink drink = drinklist.get(id);
+            InvoiceDb invoiceDb = new InvoiceDb(invoiceNr,drink.getName(),drinkOnListHashMap.get(drinkid),drink.getPriceNormal());
+            invoiceDatabase.invoiceDao().insert(invoiceDb);
+        }
+        //Empty the drinkOnListHashMap
+        drinkOnListHashMap.clear();
+        //Show the Empty List
+        showAllUsedDrinks();
+
     }
 
 
     private void putDrinkOnList(long id, int count, String addition){
-        if (hashMap == null) {
-            hashMap = new HashMap<>();
+        if (drinkOnListHashMap == null) {
+            drinkOnListHashMap = new HashMap<>();
         }
 
-        Drink drink = dataSource.getDrink(id);        // get the Drink
+        Drink drink = drinkDatabase.getDrink(id);        // get the Drink
         Log.i(LOG_TAG, "putDrinkOnList:" + drink.getName());
         switch (addition){
             case "yes":
-                if (hashMap.containsKey(id)){
-                    hashMap.put(id,hashMap.get(id) + count); // Add the count to the list
+                if (drinkOnListHashMap.containsKey(id)){
+                    drinkOnListHashMap.put(id, drinkOnListHashMap.get(id) + count); // Add the count to the list
                 } else {
-                    hashMap.put(id, count);
+                    drinkOnListHashMap.put(id, count);
                 }
                 break;
             case "no":
-                hashMap.put(id, count);
+                drinkOnListHashMap.put(id, count);
                 break;
         }
         Log.i(LOG_TAG,"--------------------");
@@ -364,7 +521,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int getDrinkOnList(long id){
         try {
-            return hashMap.get(id);
+            return drinkOnListHashMap.get(id);
         } catch (NullPointerException ex){
             return 0;
         }
@@ -398,33 +555,61 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String name = nameId.getText().toString();
-                int priceNormal = Integer.parseInt(priceNormalId.getText().toString());
-                int priceEmployee = Integer.parseInt(priceEmployeeId.getText().toString());
-                int quantity = Integer.parseInt(quantityId.getText().toString());
+                String priceN = priceNormalId.getText().toString();
+                String priceE = priceEmployeeId.getText().toString();
+                String quantit = quantityId.getText().toString();
 
+                if (name.isEmpty() || priceN.isEmpty() || priceE.isEmpty() || quantit.isEmpty()){
+                    if (name.isEmpty()) {
+                        nameId.setError(getText(R.string.notEmpty));
+                    }
+                    if (priceN.isEmpty()) {
+                        priceNormalId.setError(getText(R.string.notEmpty));
+                    }
+                    if (priceE.isEmpty()) {
+                        priceEmployeeId.setError(getText(R.string.notEmpty));
+                    }
+                    if (quantit.isEmpty()) {
+                        quantityId.setError(getText(R.string.notEmpty));
+                    }
+                    return;
+                }
+
+                int priceNormal = Integer.parseInt(priceN);
+                int priceEmployee = Integer.parseInt(priceE);
+                int quantity = Integer.parseInt(quantit);
+
+                Log.i(LOG_TAG, "ContentWrapper");
                 ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
+
                 File file = wrapper.getDir("Images",MODE_PRIVATE);
                 file = new File(file, name + ".jpg");
-                try {
-                    InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                if (imageUri != null){
+                    try {
+                        Log.i(LOG_TAG, "Try Inputstream");
+                        Log.i(LOG_TAG, "Image Uri =" + imageUri);
 
-                    //Reszie Picture
-                    Bitmap rezBitmap = resziePicture(bitmap);
-                    OutputStream outputStream = new FileOutputStream(file);
-                    rezBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
-                    outputStream.flush();
-                    outputStream.close();
-                    inputStream.close();
+                        InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-                    Log.i(LOG_TAG, "Speichern des Bildes erfolgreich:" + file);
-                } catch (IOException o) {
-                    o.printStackTrace();
-                    Log.i(LOG_TAG, "Speichern des Bildes NICHT erfolgreich");
+                        //Reszie Picture
+                        Bitmap rezBitmap = resziePicture(bitmap);
+                        OutputStream outputStream = new FileOutputStream(file);
+                        rezBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
+                        outputStream.flush();
+                        outputStream.close();
+                        inputStream.close();
+
+                        Log.i(LOG_TAG, "Speichern des Bildes erfolgreich:" + file);
+                    } catch (IOException o) {
+                        o.printStackTrace();
+                        Log.i(LOG_TAG, "Speichern des Bildes NICHT erfolgreich");
+                    }
                 }
-                dataSource.createDrink(name,priceNormal,priceEmployee,quantity,file.toString());
-                dialog.dismiss();
-                showAllDrinksRecyclerView();
+
+            drinkDatabase.createDrink(name,priceNormal,priceEmployee,quantity,file.toString());
+            dialog.dismiss();
+            showAllDrinksRecyclerView();
             }
         });
 
@@ -495,7 +680,7 @@ public class MainActivity extends AppCompatActivity {
         Bitmap rezBitmap = null;
         int orgHight = orgBitmap.getHeight();
         int orgWidth = orgBitmap.getWidth();
-        int rezWidth = 200;
+        int rezWidth = 500;
         if (orgWidth > rezWidth) {
             int rezHight = orgHight / (orgWidth / rezWidth);
             rezBitmap = Bitmap.createScaledBitmap(orgBitmap, rezWidth, rezHight, false);
@@ -531,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         for (URL k : samples.keySet()){
-            dataSource.createDrink(samples.get(k),30,40,50,downloadSamplePictures(k,samples.get(k)));
+            drinkDatabase.createDrink(samples.get(k),30,40,50,downloadSamplePictures(k,samples.get(k)));
         }
         showAllDrinksRecyclerView();
     }

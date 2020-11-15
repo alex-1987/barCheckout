@@ -3,9 +3,23 @@
     <string name="app_name">barCheckout</string>
     <string name="add">hinzufügen</string>
     <string name="imageDrink">Getränke Bild</string>
-    <string name="drink1">Cola</string>
-    <string name="drink2">Fanta</string>
-    <string name="drink3">Sprite</string>
-    <string name="drink4">Spezi</string>
     <string name="save_data">Speichere Daten</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="priceNormal">Preis Normal</string>
+    <string name="priceEmployee">Preis Mitarbeiter</string>
+    <string name="quantitiy">Anzahl im Lager</string>
+    <string name="count">Anzahl</string>
+    <string name="loadSampels">Beispiel laden</string>
+    <string name="newDrink">Neuer Drink</string>
+    <string name="Drink_Picture">Bild für das Angelegte Bild</string>
+    <string name="drink_name">Name des Drinks</string>
+    <string name="price_drink_normal">Drink Preis Normal</string>
+    <string name="drink_price_employee">Drink Preis Mitarbeiter</string>
+    <string name="Quantity_stock">Lager Menge</string>
+    <string name="invoiceNr">Rechnungs Nr</string>
+    <string name="bill">Betrag</string>
+    <string name="moneyGiven">Geld gegeben</string>
+    <string name="moneychange">Rückgeld</string>
+    <string name="notEmpty">muss ausgefüllt werden</string>
+    <string name="clickPicAbove">Für Bildauswahl das obere Bild anklicken</string>
 </resources>
