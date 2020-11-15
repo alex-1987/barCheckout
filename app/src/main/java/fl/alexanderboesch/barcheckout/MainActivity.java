@@ -72,10 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
     private HashMap<Long,Integer> drinkOnListHashMap;
 
-    private ActionBarDrawerToggle drawerToggle;
-    private DrawerLayout mDrawer;
-
-
+    //Toolbar and NavigationDrawer
+    private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
 
     public void onSaveInstanceState(@NonNull Bundle savedState) {
@@ -133,65 +133,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Find our drawer view
-       NavigationView nvDrawer = (NavigationView) findViewById(R.id.nvView);
-        // Setup drawer view
-        setupDrawerContent(nvDrawer);
+        this.configureToolBar();
+        this.configureDrawerLayout();
+        this.configureNavigationView();
+
 
         activateFAB();
-        initAppBar();
         invoiceDatabase = InvoiceDbRoom.getInstance(this);
     }
 
 
 
 
-    private void setupDrawerContent(NavigationView navigationView) {
-            navigationView.setNavigationItemSelectedListener(
-                    new NavigationView.OnNavigationItemSelectedListener() {
-                        @Override
-                        public boolean onNavigationItemSelected(MenuItem menuItem) {
-                            selectDrawerItem(menuItem);
-                            return true;
-                        }
-                    });
-        }
-
-
-    private void selectDrawerItem(MenuItem menuItem) {
-        // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
-        Class fragmentClass = null;
-        switch(menuItem.getItemId()) {
-            case R.id.nav_first_fragment:
-                //fragmentClass = FirstFragment.class;
-                break;
-            case R.id.nav_second_fragment:
-                //fragmentClass = SecondFragment.class;
-                break;
-            case R.id.nav_third_fragment:
-                //fragmentClass = ThirdFragment.class;
-                break;
-            default:
-                //fragmentClass = FirstFragment.class;
-        }
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
-
-        // Highlight the selected item has been done by NavigationView
-        menuItem.setChecked(true);
-        // Set action bar title
-        setTitle(menuItem.getTitle());
-        // Close the navigation drawer
-        mDrawer.closeDrawers();
-    }
 
     @Override
     protected void onPause() {
@@ -209,9 +162,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (drawerToggle.onOptionsItemSelected(item)){
-        return true;
-        }
         switch (item.getItemId()){
             //option Menu
             case R.id.newDrinkMenu:
@@ -221,13 +171,16 @@ public class MainActivity extends AppCompatActivity {
             case R.id.loadSamplesMenu:
                 loadSamples();
                 return true;
-            //App Drawer
-            case android.R.id.home:
-                mDrawer.openDrawer(GravityCompat.START);
-                return true;
+                //Drawer Meni
+            case R.id.nav_first_fragment:
+                break;
+            case R.id.nav_second_fragment:
+                break;
         }
+        this.drawerLayout.closeDrawer(GravityCompat.START);
 
         return super.onOptionsItemSelected(item);
+
     }
 
     @Override
@@ -243,28 +196,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggles
-        drawerToggle.onConfigurationChanged(newConfig);
+    public void onBackPressed() {
+        // 5 - Handle back click to close menu
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
-    private void initAppBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-       setSupportActionBar(toolbar);
-        // Find our drawer view
-        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        // Setup toggle to display hamburger icon with nice animation
-        drawerToggle.setDrawerIndicatorEnabled(true);
-        drawerToggle.syncState();
-
-        // Tie DrawerLayout events to the ActionBarToggle
-        mDrawer.addDrawerListener(drawerToggle);
+    // 1 - Configure Toolbar
+    private void configureToolBar(){
+        this.toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
+    // 2 - Configure Drawer Layout
+    private void configureDrawerLayout(){
+        this.drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
 
+    // 3 - Configure NavigationView
+    private void configureNavigationView(){
+        this.navigationView = (NavigationView) findViewById(R.id.nvView);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                return false;
+            }
+        });
+    }
 
 
     private void showAllUsedDrinks(){
